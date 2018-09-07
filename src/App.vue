@@ -1,17 +1,16 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <ActionInfoComponent ids="[123,456]"/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import ActionInfoComponent from './components/ActionInfoComponent.vue'
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    ActionInfoComponent
   }
 }
 </script>
