@@ -1,57 +1,69 @@
 <template>
   <div class="action-info-component">
-    <h1>My Vue Web Component</h1>
     <div v-if="loading" class="loading-block">
       <div class="lds-ripple"><div></div><div></div></div>
     </div>
-    <input type="text" v-model="search">
+    <input type="text" v-model="searchText" class="search">
     <div class="items">
       <div class="header">
-        <div class="type" v-on:click="orderBy = 'type'">type</div>        
+        <div class="type">
+        <select v-model="searchType">
+          <option value="">ALL</option>
+          <option v-for="type in listType" :key="type">{{type}}</option>
+        </select>  
+        </div>        
         <div class="label" v-on:click="orderBy = 'label'">Label</div>
-        <div class="margin" v-on:click="orderBy = 'margin'">margin</div>
-        <div class="low" v-on:click="orderBy = 'low'">low</div>
-        <div class="cost" v-on:click="orderBy = 'cost'">cost</div>
-        <div class="nb" v-on:click="orderBy = 'nb'">quantity</div>
-        <div class="mean" v-on:click="orderBy = 'mean'">mean</div>
+        <tt class="margin" v-on:click="orderBy = 'margin'">margin</tt>
+        <tt class="low" v-on:click="orderBy = 'low'">low</tt>
+        <tt class="cost" v-on:click="orderBy = 'cost'">cost</tt>
+        <tt class="nb" v-on:click="orderBy = 'nb'">quantity</tt>
+        <tt class="mean" v-on:click="orderBy = 'mean'">mean</tt>
          <div class="info" v-on:click="orderBy = 'info'">info</div>
       </div>
-      <div v-for="item in orderedAndFilteredUsers" :key="item.id" v-on:click="toto()" class="item" :title="item.id">
-        <div class="type">{{ showType(item.type) }}</div>
-        <div class="label">{{ item.label }}</div>
-        <div class="margin">{{ item.margin }}</div>
-        <div class="low">{{ item.low }}</div>
-        <div class="cost">{{ item.cost }}</div>        
-        <div class="nb">{{ item.nb }}</div>
-        <div class="mean">{{ item.mean }}</div>
-        <div class="info">{{ item.info }}</div>
+      <div v-for="item in orderedAndFilteredUsers" :key="calcKey(item)" class="item" >
+        <div class="type">{{ item.type }}</div>
+        <div class="label"><span v-for="lvl in item.level" :key="lvl" class="level">*</span><a class="icontiny" :href="'https://www.wowhead.com/item=' + item.id" :data-wowhead="'item=' + item.id">{{ item.label }}</a></div>
+        <tt class="margin">{{ item.margin }}</tt>
+        <tt class="low">{{ item.low }}</tt>
+        <tt class="cost">{{ item.cost }}</tt>        
+        <tt class="nb">{{ item.nb }}</tt>
+        <tt class="mean">{{ item.mean }}</tt>
+        <div class="info">{{ item.info }} {{item.zone}} {{item.area}}</div>
       </div>
     </div>
   </div>
 </template>
 <script>
-import _orderBy from "lodash/orderBy";
+import _ from "lodash";
+
 export default {
   props: ["ids"],
   data: () => {
     return {
       orderBy: "buyout",
-      search: "",
+      searchText: '',
+      searchType: '',
       loading: false,
       items: []
     };
   },
   computed: {
-    filteredItems() {
+    filteredItems: function() {
       return this.items.filter(item => {
-        return item.label.toLowerCase().indexOf(this.search.toLowerCase()) > -1;
+        return (!this.searchType || item.type === this.searchType) && item.label.toLowerCase().indexOf(this.searchText.toLowerCase()) > -1;
       });
     },
     orderedAndFilteredUsers: function() {
-      return _orderBy(this.filteredItems, [this.orderBy], ["desc"]);
-    }
+      return _.orderBy(this.filteredItems, [this.orderBy], ["desc"]);
+    },
+    listType: function() {
+      return _.uniq(_.map(this.items, 'type'));
+    },
   },
   methods: {
+    calcKey : function(item) {
+      return item.id + (item.level? '-'+ item.level : '');
+    },
     makeRequest: function(url, method) {
       return new Promise(function(resolve, reject) {
         var xhr = new XMLHttpRequest();
@@ -75,28 +87,44 @@ export default {
         xhr.send();
       });
     },
-    showType: target => {
-      return target.slice(5).slice(0, -5);
+    loadData: function()  {
+      this.loading = true;
+      this.makeRequest(window.location.protocol + "//" + window.location.host.replace('8080', '3000'), "GET").then(result => {
+        this.items = result;
+      }).finally( () => {
+        this.loading = false;
+      });
     }
   },
   mounted: function() {
-    this.loading = true;
-    this.makeRequest("http://localhost:3000/", "GET").then(result => {
-      this.items = result;
-      
-    }).finally( () => {
-      this.loading = false;
-    });
+    window.whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true};
+    this.loadData();
+    setInterval(() => {
+      this.loadData();
+    }, 5000)
   }
 };
 </script>
 <style>
 .action-info-component {
   position: relative;
+  background-color: rgb(2, 2, 2);
 }
 
 h1 {
   color: black;
+}
+
+.search {
+  width:100%;
+  height:45px;
+  border:none;
+  font-size: 43px;
+  padding: 5px 15px;
+}
+
+textarea:focus, input:focus, select:focus{
+    outline: none;
 }
 
 .item,
@@ -106,14 +134,34 @@ h1 {
 align-items: center;
     justify-content: space-between;
     flex-direction: row;  
+      
+      color:#FFF;
+}
+
+.level:not(:empty) {
+  padding: 0 5px;
+}
+
+.item:nth-child(even) {
+}
+.header {
+  background-color: rgb(255, 255, 255);
+  color:rgb(0, 0, 0);
+  border-top:2px solid #000;
 }
 
 .item div,
 .header div {
   display: flex;
   justify-content: flex-start;
-}
+  text-align: right;
 
+}
+tt {
+    display: flex;
+    justify-content: flex-end;
+      font-size: 15px;
+}
 
 .label,
 .margin,
@@ -124,20 +172,39 @@ align-items: center;
 .info,
 .type {
  flex: 1;
+
 }
 
-.type, .info {
-  flex: 2;
+.item .margin {
+  color:gold;
 }
-.label {
+
+.item .low {
+  color:#0070dd;
+}
+
+.item .cost {
+  color:red;
+}
+
+.item .nb {
+  color:magenta;
+}
+
+.type{
+  flex: 1;
+}
+.label, .info  {
   flex: 3;
+  padding: 0 10px;
 }
 
-.item:nth-child(even) {
-  background-color: rgb(241, 241, 241);
-}
 .item:hover {
-  background-color: rgb(95, 95, 95);
+  /* background-color: rgb(95, 95, 95);
+  color:#fff; */
+}
+
+.item a, .item:hover a{
   color:#fff;
 }
 
