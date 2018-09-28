@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import ActionInfoComponent from './components/ActionInfoComponent.vue'
+import ActionInfoComponent from './components/ActionInfoComponent/ActionInfoComponent.vue'
 
 export default {
   name: 'app',
@@ -17,8 +17,15 @@ export default {
 
 <style>
 
+
 html, body {
   margin: 0;
+  color: #fff;
+  padding: 0;
+  --color-main : #1e2b32;
+  --color-off  : #2a3942;
+  --color-text : #fff;
+  background: var(--color-main);
 }
 
 #app {
