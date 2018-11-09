@@ -38,6 +38,17 @@ select:focus {
   padding: 0 5px;
 }
 
+.listSearch {
+  display: flex;
+}
+
+.searchbutton {
+  border: none;
+  background-color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+}
+
 .item:hover {
   background-color: var(--color-main);
   transition: none;

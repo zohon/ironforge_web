@@ -3,8 +3,12 @@
     <div v-if="loading" class="loading-block">
       <div class="lds-ripple"><div></div><div></div></div>
     </div>
+    <div class="listSearch">
+      <input type="text" v-model="searchLocal" class="search" value="fr_FR">
+      <input type="text" v-model="searchServer" class="search" value="dalaran">
+      <button v-on:click='loadData()' class="searchbutton">Search</button>
+    </div>
     <input type="text" v-model="searchText" class="search">
-
     <div class="items">
       <div class="header">
         <div class="type no-sm">
@@ -45,6 +49,8 @@ export default {
       searchText: '',
       searchType: '',
       loading: false,
+      searchLocal : 'fr_FR',
+      searchServer : 'dalaran',
       items: []
     };
   },
@@ -89,21 +95,19 @@ export default {
       });
     },
     loadData: function()  {
-      this.loading = true;
-      this.makeRequest(window.location.protocol + "//" + window.location.host.replace('8081', '3000'), "GET")
-      .then(result => {
-        this.items = result;
-      }).finally( () => {
-        this.loading = false;
-      });
+      if(this.searchLocal && this.searchServer) {
+        this.loading = true;
+        this.makeRequest(window.location.protocol + "//" + window.location.host.replace('8080', '3000')+"/"+this.searchLocal+ "/"+this.searchServer, "GET")
+        .then(result => {
+          this.items = result;
+        }).finally( () => {
+          this.loading = false;
+        });
+      }
     }
   },
   mounted: function() {
     window.whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true};
-    this.loadData();
-    setInterval(() => {
-      this.loadData();
-    }, 5000)
   }
 };
 </script>
